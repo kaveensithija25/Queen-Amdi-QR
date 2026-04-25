@@ -26,14 +26,12 @@ router.get('/', async (req, res) => {
 
     await removeFile(dirs);
 
-    // Clean and Validate the phone number
     num = num.replace(/[^0-9]/g, '');
     const phone = pn('+' + num);
 
-    // awesome-phonenumber v7+ සඳහා නිවැරදි ක්‍රමය
     if (!phone.valid) { 
         if (!res.headersSent) {
-            return res.status(400).send({ code: 'Invalid phone number. Enter full international format without + or spaces.' });
+            return res.status(400).send({ code: 'Invalid phone number.' });
         }
         return;
     }
@@ -70,26 +68,32 @@ router.get('/', async (req, res) => {
                     console.log("✅ Connected successfully!");
                     
                     try {
-                        const sessionKnight = fs.readFileSync(dirs + '/creds.json');
+                        const credsPath = dirs + '/creds.json';
+                        const sessionKnight = fs.readFileSync(credsPath);
                         const userJid = jidNormalizedUser(num + '@s.whatsapp.net');
 
+                        // 1. Base64 String එක යැවීම
+                        const base64Session = Buffer.from(sessionKnight).toString('base64');
+                        await queenbella.sendMessage(userJid, { 
+                            text: `*🔐 Queen Amdi Base64 Session String:*\n\n${base64Session}\n\n*⚠️ Warning: Do not share this text with anyone!*` 
+                        });
+
+                        // 2. creds.json ෆයිල් එක Document එකක් විදිහට යැවීම
                         await queenbella.sendMessage(userJid, {
                             document: sessionKnight,
                             mimetype: 'application/json',
-                            fileName: 'creds.json'
+                            fileName: 'creds.json',
+                            caption: '📂 Here is your creds.json file.'
                         });
 
+                        // 3. Image සහ අනිත් පණිවිඩ
                         await queenbella.sendMessage(userJid, {
                             image: { url: 'C:\\Users\\BLACK ADAM\\Desktop\\QueenBella\\Queen Amdi QR\\img\\queenamdibg.png' },
-                            caption: `👑 *Queen Amdi* 👑\n\n🚀 New Commands + Fast AI Chat\n\n📁 Session File Included\n\n©2026 Adam Inc. All rights reserved.`
+                            caption: `👑 *Queen Amdi* 👑\n\n🚀 New Commands + Fast AI Chat\n\n📁 Session File & Base64 Included\n\n©2026 Adam Inc. All rights reserved.`
                         });
 
                         await queenbella.sendMessage(userJid, {
-                            text: `⚠️Do not share this file with anybody⚠️\n\
-┌┤✑  Thanks for using QueenAmdi 👑
-│└────────────┈ ⳹        
-│©2026 Adam Inc. All rights reserved.
-└─────────────────┈ ⳹\n\n`
+                            text: `⚠️Do not share this file/string with anybody⚠️\n\n┌┤✑  Thanks for using QueenAmdi 👑\n│└────────────┈ ⳹\n│©2026 Adam Inc. All rights reserved.\n└─────────────────┈ ⳹\n\n`
                         });
 
                         setTimeout(async () => {
