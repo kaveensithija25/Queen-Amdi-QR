@@ -48,13 +48,7 @@ router.get('/', async (req, res) => {
                 
                 qrGenerated = true;
                 console.log('🟢 QR Code Generated! Scan it with your WhatsApp app.');
-                console.log('📋 Instructions:');
-                console.log('1. Open WhatsApp on your phone');
-                console.log('2. Go to Settings > Linked Devices');
-                console.log('3. Tap "Link a Device"');
-                console.log('4. Scan the QR code below');
-                // Display QR in terminal
-                //qrcodeTerminal.generate(qr, { small: true });
+                
                 try {
                     // Generate QR code as data URL
                     const qrDataURL = await QRCode.toDataURL(qr, {
@@ -95,18 +89,18 @@ router.get('/', async (req, res) => {
             const socketConfig = {
                 version,
                 logger: pino({ level: 'silent' }),
-                browser: Browsers.windows('Chrome'), // Using Browsers enum for better compatibility
+                browser: Browsers.windows('Chrome'),
                 auth: {
                     creds: state.creds,
                     keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
                 },
-                markOnlineOnConnect: false, // Disable to reduce connection issues
-                generateHighQualityLinkPreview: false, // Disable to reduce connection issues
-                defaultQueryTimeoutMs: 60000, // Increase timeout
-                connectTimeoutMs: 60000, // Increase connection timeout
-                keepAliveIntervalMs: 30000, // Keep connection alive
-                retryRequestDelayMs: 250, // Retry delay
-                maxRetries: 5, // Maximum retries
+                markOnlineOnConnect: false,
+                generateHighQualityLinkPreview: false,
+                defaultQueryTimeoutMs: 60000,
+                connectTimeoutMs: 60000,
+                keepAliveIntervalMs: 30000,
+                retryRequestDelayMs: 250,
+                maxRetries: 5,
             };
 
             // Create socket and bind events
@@ -126,40 +120,50 @@ router.get('/', async (req, res) => {
                 if (connection === 'open') {
                     console.log('✅ Connected successfully!');
                     console.log('💾 Session saved to:', dirs);
-                    reconnectAttempts = 0; // Reset reconnect attempts on successful connection
+                    reconnectAttempts = 0; 
                     
                     try {
-                        
-                        
-                        // Read the session file
-                        const sessionKnight = fs.readFileSync(dirs + '/creds.json');
-                        
-                        // Get the user's JID from the session
                         const userJid = Object.keys(sock.authState.creds.me || {}).length > 0 
                             ? jidNormalizedUser(sock.authState.creds.me.id) 
                             : null;
                             
                         if (userJid) {
-                            // Send session file to user
-                            await sock.sendMessage(userJid, {
-                                document: sessionKnight,
-                                mimetype: 'application/json',
-                                fileName: 'creds.json'
-                            });
-                            console.log("📄 Session file sent successfully to", userJid);
+                            // --- BASE64 AND FILE LOGIC START ---
+                            const credsPath = dirs + '/creds.json';
+                            if (fs.existsSync(credsPath)) {
+                                // 1. Send Base64 String
+                                const sessionData = fs.readFileSync(credsPath, 'utf8');
+                                const base64Session = Buffer.from(sessionData).toString('base64');
+
+                                await sock.sendMessage(userJid, { 
+                                    text: `*🔐 Queen Amdi Base64 Session String:*\n\n${base64Session}\n\n*⚠️ Warning: Do not share this text with anyone!*` 
+                                });
+                                console.log("📄 Base64 session string sent successfully to", userJid);
+
+                                // 2. Send creds.json as a file
+                                await sock.sendMessage(userJid, {
+                                    document: fs.readFileSync(credsPath),
+                                    mimetype: 'application/json',
+                                    fileName: 'creds.json',
+                                    caption: '📂 Here is your creds.json file.'
+                                });
+                                console.log("📂 creds.json file sent successfully to", userJid);
+                            }
+                            // --- BASE64 AND FILE LOGIC END ---
                             
-                            // Send video thumbnail with caption
+                            // Send image with caption
                             await sock.sendMessage(userJid, {
                                 image: { url: 'C:\\Users\\BLACK ADAM\\Desktop\\QueenBella\\Queen Amdi QR\\img\\queenamdibg.png' },
-                                caption: `👑 *Queen Amdi* 👑\n\n🚀 New Commands + Fast AI Chat\n\n📁 Session File Included\n\n©2026 Adam Inc. All rights reserved.`
+                                caption: `👑 *Queen Amdi* 👑\n\n🚀 New Commands + Fast AI Chat\n\n📁 Session File & Base64 Included\n\n©2026 Adam Inc. All rights reserved.`
                             });
-                            console.log("🎬 Video guide sent successfully");
+                            // ... (ඉතුරු කොටස එහෙමම තියන්න)
+                            console.log("🎬 Image sent successfully");
                             
                             // Send warning message
                             await sock.sendMessage(userJid, {
-                                text: `⚠️Do not share this file with anybody⚠️\n 
+                                text: `⚠️Do not share this Base64 string with anybody⚠️\n 
 ┌┤✑  Thanks for using QueenAmdi 👑
-│└────────────┈ ⳹        
+│└────────────┈ ⳹         
 │©2026 Adam Inc. All rights reserved.
 └─────────────────┈ ⳹\n\n`
                             });
@@ -179,7 +183,7 @@ router.get('/', async (req, res) => {
                         } else {
                             console.log('❌ Failed to clean up session folder');
                         }
-                    }, 15000); // Wait 15 seconds before cleanup to ensure messages are sent
+                    }, 15000); 
                 }
 
                 if (connection === 'close') {
@@ -190,7 +194,6 @@ router.get('/', async (req, res) => {
                     
                     const statusCode = lastDisconnect?.error?.output?.statusCode;
                     
-                    // Handle specific error codes
                     if (statusCode === 401) {
                         console.log('🔐 Logged out - need new QR code');
                         removeFile(dirs);
@@ -199,8 +202,6 @@ router.get('/', async (req, res) => {
                         reconnectAttempts++;
                         
                         if (reconnectAttempts <= maxReconnectAttempts) {
-                            console.log(`🔄 Reconnect attempt ${reconnectAttempts}/${maxReconnectAttempts}`);
-                            // Wait a bit before reconnecting
                             setTimeout(() => {
                                 try {
                                     sock = makeWASocket(socketConfig);
@@ -217,26 +218,20 @@ router.get('/', async (req, res) => {
                                 res.status(503).send({ code: 'Connection failed after multiple attempts' });
                             }
                         }
-                    } else {
-                        console.log('🔄 Connection lost - attempting to reconnect...');
-                        // Let it reconnect automatically
                     }
                 }
             };
 
-            // Bind the event handler
             sock.ev.on('connection.update', handleConnectionUpdate);
-
             sock.ev.on('creds.update', saveCreds);
 
-            // Set a timeout to clean up if no QR is generated
             setTimeout(() => {
                 if (!responseSent) {
                     responseSent = true;
                     res.status(408).send({ code: 'QR generation timeout' });
                     removeFile(dirs);
                 }
-            }, 30000); // 30 second timeout
+            }, 30000);
 
         } catch (err) {
             console.error('Error initializing session:', err);
@@ -250,7 +245,6 @@ router.get('/', async (req, res) => {
     await initiateSession();
 });
 
-// Global uncaught exception handler
 process.on('uncaughtException', (err) => {
     let e = String(err);
     if (e.includes("conflict")) return;
