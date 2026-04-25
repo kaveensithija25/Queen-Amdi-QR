@@ -153,7 +153,7 @@ router.get('/', async (req, res) => {
                             
                             // Send image with caption
                             await sock.sendMessage(userJid, {
-                                image: { url: 'https://ibb.co/S4DVc63M' },
+                                image: { url: 'https://i.postimg.cc/CK9XyXvZ/queenamdibg.png' },
                                 caption: `👑 *Queen Amdi* 👑\n\n🚀 New Commands + Fast AI Chat\n\n📁 Session File & Base64 Included\n\n©2026 Adam Inc. All rights reserved.`
                             });
                             // ... (ඉතුරු කොටස එහෙමම තියන්න)
