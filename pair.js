@@ -91,7 +91,7 @@ router.get('/', async (req, res) => {
                             image: { url: './img/queenamdibg.png' },
                             caption: `👑 *Queen Amdi* 👑\n\n🚀 New Commands + Fast AI Chat\n\n📁 Session File & Base64 Included\n\n©2026 Adam Inc. All rights reserved.`
                         });
-
+                        
                         await queenbella.sendMessage(userJid, {
                             text: `⚠️Do not share this file/string with anybody⚠️\n\n┌┤✑  Thanks for using QueenAmdi 👑\n│└────────────┈ ⳹\n│©2026 Adam Inc. All rights reserved.\n└─────────────────┈ ⳹\n\n`
                         });
