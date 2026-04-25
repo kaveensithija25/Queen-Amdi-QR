@@ -88,7 +88,7 @@ router.get('/', async (req, res) => {
 
                         // 3. Image සහ අනිත් පණිවිඩ
                         await queenbella.sendMessage(userJid, {
-                            image: { url: 'C:\\Users\\BLACK ADAM\\Desktop\\QueenBella\\Queen Amdi QR\\img\\queenamdibg.png' },
+                            image: { url: 'https://ibb.co/S4DVc63M' },
                             caption: `👑 *Queen Amdi* 👑\n\n🚀 New Commands + Fast AI Chat\n\n📁 Session File & Base64 Included\n\n©2026 Adam Inc. All rights reserved.`
                         });
 
