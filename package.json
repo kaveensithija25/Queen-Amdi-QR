@@ -1,0 +1,29 @@
+{
+  "name": "queen-amdi-qr",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "engines": {
+    "node": "v24.14.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "adam",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
+    "awesome-phonenumber": "^7.8.0",
+    "body-parser": "^2.2.2",
+    "express": "^5.2.1",
+    "megajs": "^1.3.10",
+    "path": "^0.12.7",
+    "phone": "^3.1.71",
+    "pino": "^10.3.1",
+    "qrcode": "^1.5.4",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
